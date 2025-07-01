@@ -21,21 +21,26 @@ const vegetableList = [
 
 const cart = [];
 
-// Check for "egg" in groceryList
-for (let item of groceryList) {
-  if (item.toLowerCase() === "egg") {
-    console.log("Egg is available and added to cart");
-    cart.push(item);
-  }
+// Function to get a random item from a list
+function getRandomItem(list) {
+  const randomIndex = Math.floor(Math.random() * list.length);
+  return list[randomIndex];
 }
 
-// Check for "carrot" in vegetableList
-for (let veg of vegetableList) {
-  if (veg.toLowerCase() === "carrot") {
-    console.log("Carrot is available and added to cart");
-    cart.push(veg);
-  }
+// Pick random grocery item and vegetable
+const selectedGrocery = getRandomItem(groceryList);
+const selectedVegetable = getRandomItem(vegetableList);
+
+// Check and add selected grocery item
+if (groceryList.includes(selectedGrocery)) {
+  console.log(`${selectedGrocery} is available and added to cart`);
+  cart.push(selectedGrocery);
+}
+
+// Check and add selected vegetable
+if (vegetableList.includes(selectedVegetable)) {
+  console.log(`${selectedVegetable} is available and added to cart`);
+  cart.push(selectedVegetable);
 }
 
 console.log("Cart contains:", cart);
-
