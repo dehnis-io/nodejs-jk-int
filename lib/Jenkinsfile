@@ -2,17 +2,17 @@ pipeline {
     agent { label 'linux-grp-a' }
 
     environment {
-        APP_NAME = 'Nodejs-JK-INT'
-        RELEASE_VERSION = '1.0.0'
-        BUILD_NUMBER = "${env.BUILD_NUMBER}"
-        BUILD_ID = "${env.BUILD_ID}"
-        BUILD_URL = "${env.BUILD_URL}"
-        BUILD_TIMESTAMP = "${new Date().format('yyyy-MM-dd HH:mm:ss')}"
-        BUILD_USER = "${env.BUILD_USER_ID ?: 'unknown'}"
-        TEST_ENV = 'test'
-        DEPLOY_ENV = 'production'
-        GIT_REPO = 'https://github.com/dehnis-io/nodejs-jk-int.git'
-        GIT_BRANCH = 'main'
+        APP_NAME         = 'Nodejs-JK-INT'
+        RELEASE_VERSION  = '1.0.0'
+        BUILD_NUMBER     = "${env.BUILD_NUMBER}"
+        BUILD_ID         = "${env.BUILD_ID}"
+        BUILD_URL        = "${env.BUILD_URL}"
+        // Avoid using Groovy code inside environment block for BUILD_TIMESTAMP — move it to a step
+        BUILD_USER       = "${env.BUILD_USER_ID ?: 'unknown'}"
+        TEST_ENV         = 'test'
+        DEPLOY_ENV       = 'production'
+        GIT_REPO         = 'https://github.com/dehnis-io/nodejs-jk-int.git'
+        GIT_BRANCH       = 'main'
     }
 
     stages {
@@ -26,38 +26,37 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Running tests for ${APP_NAME} in ${TEST_ENV} environment"
-                sh 'echo "Running tests..."'  // Replace with real test command
+                sh 'echo "Running tests..."' // Replace with real test command
             }
         }
 
-        // stage('Confirm') {
-        //     steps {
-        //         script {
-        //             def userInput = input(
-        //                 id: 'DeployConfirm', message: 'Proceed to deploy?',
-        //                 ok: 'Do it',
-        //                 parameters: []
-        //             )
-        //             echo "User approved deployment."
-        //         }
-        //     }
-        // }
-
         stage('Confirm') {
-            agent { label 'Built-In Node' }
-            input {
-                id: 'DeployConfirm', message: 'Proceed to deploy?',
-                ok: 'Do it',
-                parameters: [
-                    string(name: 'DEPLOY_ENV', defaultValue: "${DEPLOY_ENV}", description: 'Deployment environment')
-                ]
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'DeployConfirm',
+                        message: 'Proceed to deploy?',
+                        ok: 'Do it',
+                        parameters: [
+                            string(name: 'DEPLOY_ENV', defaultValue: "${DEPLOY_ENV}", description: 'Deployment environment')
+                        ]
+                    )
+                    // Store user's input in environment (must use env.VAR to persist across steps)
+                    env.DEPLOY_ENV = userInput
+                    echo "User confirmed deployment to ${env.DEPLOY_ENV}"
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Deploying ${APP_NAME} to ${DEPLOY_ENV}..."
-                sh 'echo "Deploying application..."'  // Replace with real deploy command
+                script {
+                    def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
+                    echo "Build started at: ${timestamp}"
+                }
+
+                echo "Deploying ${APP_NAME} to ${env.DEPLOY_ENV}..."
+                sh 'echo "Deploying application..."' // Replace with real deploy command
             }
         }
     }
