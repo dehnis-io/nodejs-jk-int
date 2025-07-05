@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'Nodejs-JK-INT'
+        TEST_ENV = 'test'
+        DEPLOY_ENV = 'production'
+        GIT_REPO = 'https://github.com/dehnis-io/nodejs-jk-int.git'
+        GIT_BRANCH = 'main'
+    }
+
+    stages {
+        stage('Fetch') {
+            steps {
+                echo "Fetching code for ${APP_NAME} from ${GIT_REPO}"
+                git url: "${GIT_REPO}", branch: "${GIT_BRANCH}"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests for ${APP_NAME} in ${TEST_ENV} environment"
+                sh 'echo "Running tests..."'  // Replace with real test command
+            }
+        }
+
+        stage('Confirm') {
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'DeployConfirm', message: 'Proceed to deploy?',
+                        ok: 'Do it',
+                        parameters: []
+                    )
+                    echo "User approved deployment."
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying ${APP_NAME} to ${DEPLOY_ENV}..."
+                sh 'echo "Deploying application..."'  // Replace with real deploy command
+            }
+        }
+    }
+}
