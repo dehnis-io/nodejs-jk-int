@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'linux-grp-a' }
 
     environment {
         APP_NAME = 'Nodejs-JK-INT'
@@ -30,16 +30,27 @@ pipeline {
             }
         }
 
+        // stage('Confirm') {
+        //     steps {
+        //         script {
+        //             def userInput = input(
+        //                 id: 'DeployConfirm', message: 'Proceed to deploy?',
+        //                 ok: 'Do it',
+        //                 parameters: []
+        //             )
+        //             echo "User approved deployment."
+        //         }
+        //     }
+        // }
+
         stage('Confirm') {
-            steps {
-                script {
-                    def userInput = input(
-                        id: 'DeployConfirm', message: 'Proceed to deploy?',
-                        ok: 'Do it',
-                        parameters: []
-                    )
-                    echo "User approved deployment."
-                }
+            agent { label 'Built-In Node' }
+            input {
+                id: 'DeployConfirm', message: 'Proceed to deploy?',
+                ok: 'Do it',
+                parameters: [
+                    string(name: 'DEPLOY_ENV', defaultValue: "${DEPLOY_ENV}", description: 'Deployment environment')
+                ]
             }
         }
 
